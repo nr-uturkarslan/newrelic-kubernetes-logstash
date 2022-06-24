@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:      
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
+      volumes:
+      - name: {{ .Values.name }}
+        configMap:
+          defaultMode: 0600
+          name: {{ .Values.name }}
+      containers:
+      - name: {{ .Values.name }}
+        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+        args:
+          - "-e"
+          - "-E"
+          - "http.enabled=true"
+        livenessProbe:
+{{ toYaml .Values.livenessProbe | indent 10 }}
+        readinessProbe:
+{{ toYaml .Values.readinessProbe | indent 10 }}
+        resources: {{ toYaml ( .Values.resources | default .Values.deployment.resources ) | nindent 10 }}
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: {{ .Values.name }}
+          mountPath: /usr/share/filebeat/logs/filebeat
+          readOnly: true
