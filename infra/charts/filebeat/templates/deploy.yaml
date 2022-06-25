@@ -14,31 +14,91 @@ spec:
     metadata:
       labels:
         app: {{ .Values.name }}
-    spec:      
-      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
-      volumes:
-      - name: {{ .Values.name }}
-        configMap:
-          defaultMode: 0600
-          name: {{ .Values.name }}
+    spec: 
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
       - name: {{ .Values.name }}
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
-        args:
-          - "-e"
-          - "-E"
-          - "http.enabled=true"
+        args: [
+          "-c", "/etc/filebeat.yml",
+          "-e",
+        ]
         livenessProbe:
-{{ toYaml .Values.livenessProbe | indent 10 }}
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              #!/usr/bin/env bash -e
+              curl --fail 127.0.0.1:5066
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
         readinessProbe:
-{{ toYaml .Values.readinessProbe | indent 10 }}
-        resources: {{ toYaml ( .Values.resources | default .Values.deployment.resources ) | nindent 10 }}
+          exec:
+            command:
+            - sh
+            - -c
+            - |
+              #!/usr/bin/env bash -e
+              filebeat test output
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "1000m"
+            memory: "200Mi"
         env:
+        # - name: SYSTEM_HOSTFS
+        #   value: /hostfs
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        securityContext:
+          runAsUser: 0
         volumeMounts:
-        - name: {{ .Values.name }}
-          mountPath: /usr/share/filebeat/logs/filebeat
+        - name: {{ .Values.name }}-config
+          mountPath: /etc/filebeat.yml
           readOnly: true
+          subPath: filebeat.yml
+        # - name: {{ .Values.name }}-config
+        #   mountPath: /usr/share/filebeat/filebeat.yml
+        #   readOnly: true
+        #   subPath: filebeat.yml
+        - name: data
+          mountPath: /usr/share/filebeat/data
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+      volumes:
+      - name: {{ .Values.name }}-config
+        configMap:
+          defaultMode: 0640
+          name: {{ .Values.name }}-config
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: varlog
+        hostPath:
+          path: /var/log
+      # data folder stores a registry of read status for all files, so we don't send everything again on a Filebeat pod restart
+      - name: data
+        hostPath:
+          # When filebeat runs as non-root user, this directory needs to be writable by group (g+w).
+          path: /var/lib/filebeat-data
+          type: DirectoryOrCreate
