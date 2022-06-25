@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      name: {{ .Values.name }}
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - name: {{ .Values.name }}
+        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+        ports:
+        - name: http
+          containerPort: {{ .Values.httpPort }}
+        env:
+        - name: LS_JAVA_OPTS
+          value: "{{ .Values.logstashJavaOpts }}"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "1536Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1536Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 300
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 3
+        volumeMounts:
+          - name: {{ .Values.name }}-config
+            mountPath: /usr/share/logstash/config/logstash.yml
+            subPath: logstash.yml
+          # - name: {{ .Values.name }}-config
+          #   mountPath: /usr/share/logstash/config/pipeline.yml
+          #   subPath: pipeline.yml
+          - name: {{ .Values.name }}-pipeline
+            mountPath: /usr/share/logstash/pipeline/logstash.conf
+            subPath: logstash.conf
+      volumes:
+      - name: {{ .Values.name }}-config
+        configMap:
+          name: {{ .Values.name }}-config
+          items:
+          - key: logstash.yml
+            path: logstash.yml
+          # - key: pipeline.yml
+          #   path: pipeline.yml
+      - name: {{ .Values.name }}-pipeline
+        configMap:
+          name: {{ .Values.name }}-pipeline
+          items:
+          - key: logstash.conf
+            path: logstash.conf

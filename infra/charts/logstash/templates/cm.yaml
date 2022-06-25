@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-pipeline
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => {{ .Values.beatsPort }}
+      }
+    }
+    output { stdout { } }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+  pipeline.yml: |
+    - pipeline.id: main
+      path.config: "/usr/share/logstash/pipeline"

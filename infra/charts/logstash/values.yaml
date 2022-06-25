@@ -1,0 +1,12 @@
+name: logstash
+namespace: elk
+
+image: "docker.elastic.co/logstash/logstash"
+imageTag: "8.1.0"
+
+replicas: 1
+
+logstashJavaOpts: "-Xmx1g -Xms1g"
+
+httpPort: 9600
+beatsPort: 5044
