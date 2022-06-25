@@ -1,0 +1,29 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Values.name }}
+  # should be the namespace where filebeat is running
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+rules:
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs: ["get", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Values.name }}-kubeadm-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.name }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    resourceNames:
+      - kubeadm-config
+    verbs: ["get"]

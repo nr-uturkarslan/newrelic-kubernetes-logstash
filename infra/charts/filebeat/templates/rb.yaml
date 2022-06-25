@@ -1,0 +1,27 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.name }}
+    namespace: {{ .Values.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Values.name }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.name }}-kubeadm-config
+  namespace: {{ .Values.namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.name }}
+    namespace: {{ .Values.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Values.name }}-kubeadm-config

@@ -1,12 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
   labels:
     app: {{ .Values.name }}
 spec:
-  replicas: {{ .Values.replicas }}
+  # replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       app: {{ .Values.name }}
@@ -15,6 +15,7 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec: 
+      serviceAccountName: {{ .Values.name }}
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       containers:
@@ -24,30 +25,30 @@ spec:
           "-c", "/etc/filebeat.yml",
           "-e",
         ]
-        livenessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - |
-              #!/usr/bin/env bash -e
-              curl --fail 127.0.0.1:5066
-          failureThreshold: 3
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 5
-        readinessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - |
-              #!/usr/bin/env bash -e
-              filebeat test output
-          failureThreshold: 3
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 5
+        # livenessProbe:
+        #   exec:
+        #     command:
+        #     - sh
+        #     - -c
+        #     - |
+        #       #!/usr/bin/env bash -e
+        #       curl --fail 127.0.0.1:5066
+        #   failureThreshold: 3
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 10
+        #   timeoutSeconds: 5
+        # readinessProbe:
+        #   exec:
+        #     command:
+        #     - sh
+        #     - -c
+        #     - |
+        #       #!/usr/bin/env bash -e
+        #       filebeat test output -c /etc/filebeat.yml
+        #   failureThreshold: 3
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 10
+        #   timeoutSeconds: 5
         resources:
           requests:
             cpu: "100m"
@@ -69,14 +70,10 @@ spec:
         securityContext:
           runAsUser: 0
         volumeMounts:
-        - name: {{ .Values.name }}-config
+        - name: config
           mountPath: /etc/filebeat.yml
           readOnly: true
           subPath: filebeat.yml
-        # - name: {{ .Values.name }}-config
-        #   mountPath: /usr/share/filebeat/filebeat.yml
-        #   readOnly: true
-        #   subPath: filebeat.yml
         - name: data
           mountPath: /usr/share/filebeat/data
         - name: varlibdockercontainers
@@ -86,7 +83,7 @@ spec:
           mountPath: /var/log
           readOnly: true
       volumes:
-      - name: {{ .Values.name }}-config
+      - name: config
         configMap:
           defaultMode: 0640
           name: {{ .Values.name }}-config

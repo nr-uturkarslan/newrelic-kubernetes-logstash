@@ -32,24 +32,24 @@ spec:
           limits:
             cpu: "1000m"
             memory: "1536Mi"
-        livenessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 300
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-          successThreshold: 1
-        readinessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-          successThreshold: 3
+        # livenessProbe:
+        #   httpGet:
+        #     path: /
+        #     port: http
+        #   initialDelaySeconds: 300
+        #   periodSeconds: 10
+        #   timeoutSeconds: 5
+        #   failureThreshold: 3
+        #   successThreshold: 1
+        # readinessProbe:
+        #   httpGet:
+        #     path: /
+        #     port: http
+        #   initialDelaySeconds: 60
+        #   periodSeconds: 10
+        #   timeoutSeconds: 5
+        #   failureThreshold: 3
+        #   successThreshold: 3
         volumeMounts:
           - name: {{ .Values.name }}-config
             mountPath: /usr/share/logstash/config/logstash.yml

@@ -12,6 +12,7 @@ logstash["name"]="logstash"
 logstash["namespace"]="elk"
 logstash["httpPort"]=9600
 logstash["beatsPort"]=5044
+logstash["namespaceToWatch"]="test"
 
 # filebeat
 declare -A filebeat
@@ -37,6 +38,7 @@ helm upgrade ${logstash[name]} \
   --set namespace=${logstash[namespace]} \
   --set httpPort=${logstash[httpPort]} \
   --set beatsPort=${logstash[beatsPort]} \
+  --set namespaceToWatch=${logstash[namespaceToWatch]} \
   ../charts/logstash
 
 # filebeat
