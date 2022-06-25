@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: {{ .Values.name }}
-        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+        image: "{{ .Values.dockerhubName }}/{{ .Values.name }}"
         ports:
         - name: http
           containerPort: {{ .Values.httpPort }}

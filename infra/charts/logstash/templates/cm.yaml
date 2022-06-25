@@ -12,7 +12,12 @@ data:
         port => {{ .Values.beatsPort }}
       }
     }
-    output { stdout { } }
+    output {
+      newrelic {
+        license_key => "{{ .Values.newRelicLicenseKey }}"
+        base_uri => "{{ .Values.newRelicLogsApi }}"
+      }
+    }
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -24,6 +29,3 @@ metadata:
 data:
   logstash.yml: |
     http.host: "0.0.0.0"
-  pipeline.yml: |
-    - pipeline.id: main
-      path.config: "/usr/share/logstash/pipeline"

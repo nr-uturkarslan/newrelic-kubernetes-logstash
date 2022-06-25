@@ -6,6 +6,9 @@
 
 ### Set variables
 
+# New Relic Logs API
+newRelicLogsApi="https://log-api.eu.newrelic.com/log/v1"
+
 # Logstash
 declare -A logstash
 logstash["name"]="logstash"
@@ -30,6 +33,14 @@ randomlogger["namespace"]="test"
 ### Build & Push ###
 ####################
 
+# Logstash
+echo -e "\n--- Logstash ---\n"
+docker build \
+  --tag "${DOCKERHUB_NAME}/${logstash[name]}" \
+  "../../apps/logstash/."
+docker push "${DOCKERHUB_NAME}/${logstash[name]}"
+echo -e "\n------\n"
+
 # Random Logger
 echo -e "\n--- Random Logger ---\n"
 docker build \
@@ -53,8 +64,11 @@ helm upgrade ${logstash[name]} \
   --namespace ${logstash[namespace]} \
   --set name=${logstash[name]} \
   --set namespace=${logstash[namespace]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
   --set httpPort=${logstash[httpPort]} \
   --set beatsPort=${logstash[beatsPort]} \
+  --set newRelicLicenseKey=$NEWRELIC_LICENSE_KEY \
+  --set newRelicLogsApi=$newRelicLogsApi \
   ../charts/logstash
 
 # Filebeat
@@ -72,6 +86,10 @@ helm upgrade ${filebeat[name]} \
   --set logstashPort=${filebeat[logstashPort]} \
   --set namespaceToWatch=${filebeat[namespaceToWatch]} \
   ../charts/filebeat
+
+############
+### Apps ###
+############
 
 # Random Logger
 echo "Deploying Random Logger ..."
