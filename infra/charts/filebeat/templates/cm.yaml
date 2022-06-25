@@ -41,9 +41,9 @@ data:
     #        paths:
     #          - /var/log/containers/*${data.kubernetes.container.id}.log
 
-    processors:
-      - add_cloud_metadata:
-      - add_host_metadata:
+    # processors:
+    #   - add_cloud_metadata:
+    #   - add_host_metadata:
 
     output.logstash:
       hosts: ["{{ .Values.logstashName }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.logstashPort }}"]
