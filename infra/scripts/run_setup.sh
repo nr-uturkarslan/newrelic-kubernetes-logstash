@@ -22,12 +22,18 @@ filebeat["name"]="filebeat"
 filebeat["namespace"]="elk"
 filebeat["logstashName"]=${logstash[name]}
 filebeat["logstashPort"]=5044
-filebeat["namespaceToWatch"]="test"
+filebeat["namespaceToWatch"]="apps"
 
-# Random Logger
-declare -A randomlogger
-randomlogger["name"]="randomlogger"
-randomlogger["namespace"]="test"
+# Bash Logger
+declare -A bashlogger
+bashlogger["name"]="bashlogger"
+bashlogger["namespace"]=${filebeat[namespaceToWatch]}
+
+# Java Logger
+declare -A javalogger
+javalogger["name"]="javalogger"
+javalogger["namespace"]=${filebeat[namespaceToWatch]}
+javalogger["port"]=8080
 
 ####################
 ### Build & Push ###
@@ -41,12 +47,20 @@ docker build \
 docker push "${DOCKERHUB_NAME}/${logstash[name]}"
 echo -e "\n------\n"
 
-# Random Logger
-echo -e "\n--- Random Logger ---\n"
+# Bash Logger
+echo -e "\n--- Bash Logger ---\n"
 docker build \
-  --tag "${DOCKERHUB_NAME}/${randomlogger[name]}" \
-  "../../apps/randomlogger/."
-docker push "${DOCKERHUB_NAME}/${randomlogger[name]}"
+  --tag "${DOCKERHUB_NAME}/${bashlogger[name]}" \
+  "../../apps/bash/."
+docker push "${DOCKERHUB_NAME}/${bashlogger[name]}"
+echo -e "\n------\n"
+
+# Java Logger
+echo -e "\n--- Java Logger ---\n"
+docker build \
+  --tag "${DOCKERHUB_NAME}/${javalogger[name]}" \
+  "../../apps/java/."
+docker push "${DOCKERHUB_NAME}/${javalogger[name]}"
 echo -e "\n------\n"
 
 ###########
@@ -91,16 +105,30 @@ helm upgrade ${filebeat[name]} \
 ### Apps ###
 ############
 
-# Random Logger
-echo "Deploying Random Logger ..."
+# Bash Logger
+echo "Deploying Bash Logger ..."
 
-helm upgrade ${randomlogger[name]} \
+helm upgrade ${bashlogger[name]} \
   --install \
   --wait \
   --debug \
   --create-namespace \
-  --namespace ${randomlogger[namespace]} \
+  --namespace ${bashlogger[namespace]} \
   --set dockerhubName=$DOCKERHUB_NAME \
-  --set name=${randomlogger[name]} \
-  --set namespace=${randomlogger[namespace]} \
-  ../charts/randomlogger
+  --set name=${bashlogger[name]} \
+  --set namespace=${bashlogger[namespace]} \
+  ../charts/bash
+
+# Java Logger
+echo "Deploying Java Logger ..."
+
+helm upgrade ${javalogger[name]} \
+  --install \
+  --wait \
+  --debug \
+  --create-namespace \
+  --namespace ${javalogger[namespace]} \
+  --set dockerhubName=$DOCKERHUB_NAME \
+  --set name=${javalogger[name]} \
+  --set namespace=${javalogger[namespace]} \
+  ../charts/java
