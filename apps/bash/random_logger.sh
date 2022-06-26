@@ -3,5 +3,5 @@
 while true
 do
   openssl rand -base64 16
-  sleep 2
+  sleep 5
 done
