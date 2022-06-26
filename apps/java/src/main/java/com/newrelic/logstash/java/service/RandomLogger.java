@@ -28,13 +28,13 @@ public class RandomLogger implements CommandLineRunner {
         while (true) {
 
             var environmentCounter = random.nextInt(envs.size());
-            MDC.put("env", envs.get(environmentCounter));
+            MDC.put("my.custom.field.env", envs.get(environmentCounter));
 
             var teamCounter = random.nextInt(teams.size());
-            MDC.put("team", teams.get(teamCounter));
+            MDC.put("my.custom.field.team", teams.get(teamCounter));
 
             var leadCounter = random.nextInt(leads.size());
-            MDC.put("lead", leads.get(leadCounter));
+            MDC.put("my.custom.field.lead", leads.get(leadCounter));
 
             logger.info(UUID.randomUUID().toString());
             MDC.clear();
