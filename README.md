@@ -15,11 +15,11 @@ The demo can be run on any Kubernetes cluster. Yet since it's just a demo, `kind
 
 Since we are forwarding the logs to New Relic, we have to set the license key to Logstash config. This is automatically done in the setup script but the environment variable `NEWRELIC_LICENSE_KEY` has to be set.
 
-The other environment variables is your Docker Hub account name which is to be set per `DOCKERHUB_NAME`. Be sure that you are logged in into your Docker Hub account.
+The other environment variable is your Docker Hub account name which is to be set per `DOCKERHUB_NAME`. Be sure that you are logged in to your Docker Hub account.
 
 ## Set New Relic Logs API
 
-Within the setup script `infra/scripts/run_setup.sh`, the New Relic Logs API is hardcoded as `https://log-api.eu.newrelic.com/log/v1`. If your New Relic account which you want to forward the logs to is in US, you have to rename it to `https://log-api.newrelic.com/log/v1`.
+Within the setup script `infra/scripts/run_setup.sh`, the New Relic Logs API is hardcoded as `https://log-api.eu.newrelic.com/log/v1`. If your New Relic account where you want to forward the logs to is in US, you have to rename it to `https://log-api.newrelic.com/log/v1`.
 
 ## Run setup script
 
